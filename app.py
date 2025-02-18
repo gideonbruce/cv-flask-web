@@ -45,19 +45,24 @@ def upload():
     # Run YOLO detection
     img = Image.open(filepath)
     results = model(img)
-    detections = []
     
+    weed_count = 0  # Initialize weed count
+
+    # Iterate over detections and count weeds
+    detections = []
     for result in results:
         for box in result.boxes:
-            x1, y1, x2, y2 = box.xyxy[0].tolist()
             cls = result.names[int(box.cls[0])]
+            if cls == 'weed':  # Assuming 'weed' is one of the classes detected by YOLO
+                weed_count += 1
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
             detections.append({"class": cls, "bbox": [x1, y1, x2, y2]})
-    
-    # Save file path to MySQL
-    cursor.execute("INSERT INTO images (file_path) VALUES (%s)", (filename,))
+
+    # Save the weed count and image path to MySQL
+    cursor.execute("INSERT INTO images (file_path, weed_count) VALUES (%s, %s)", (filename, weed_count))
     db.commit()
     
-    return jsonify({"detections": detections, "image": filename})
+    return jsonify({"detections": detections, "weed_count": weed_count, "image": filename})
 
 if __name__ == '__main__':
     app.run(debug=True)
