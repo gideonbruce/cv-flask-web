@@ -12,7 +12,7 @@ db = mysql.connector.connect(
     host="localhost",
     user="root",
     password="@Gideon",
-    database="weed_detection_db"
+    database="weed_detections"
 )
 cursor = db.cursor()
 
