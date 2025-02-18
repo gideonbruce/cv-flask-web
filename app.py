@@ -31,6 +31,34 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 #signup route
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = SignupForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # Check if user already exists
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        existing_user = cursor.fetchone()
+        if existing_user:
+            flash('Email already registered', 'danger')
+            return redirect(url_for('signup'))
+
+        # Insert new user into the database
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+                       (username, email, hashed_password))
+        db.commit()
+        cursor.close()
+
+        flash('Account created successfully!', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('signup.html', form=form)
 
 #route to display most frequent bounding boxes
 @app.route('/most_frequent_bboxes')
@@ -40,6 +68,34 @@ def most_frequent_bboxes():
     img_base64 = generate_bboxes_plot(most_common_boxes)
 
     return render_template('most_frequent_bboxes.html',plot_data=img_base64)
+
+# login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+
+        if user and bcrypt.check_password_hash(user[3], password):  # user[3] is the password field
+            session['user_id'] = user[0]  # Store user ID in session
+            flash('Login successful', 'success')
+            return redirect(url_for('dashboard'))  # Redirect to the dashboard or any other page
+
+        flash('Login failed. Check email and/or password', 'danger')
+    return render_template('login.html', form=form)
+
+# Dashboard Route (Redirect after successful login)
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
 
 #route to display plotting
 @app.route('/detections_over_time')
@@ -125,6 +181,13 @@ def index():
 @app.route('/start_live_detection')
 def start_live_detection():
     return Response(detect_live(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+# Logout Route
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You have been logged out', 'info')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
