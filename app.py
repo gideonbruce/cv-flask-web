@@ -10,6 +10,7 @@ import base64
 from io import BytesIO 
 import os
 from PIL import Image
+from detection_utils import get_most_frequent_bboxes, generate_bboxes_plot
 
 app = Flask(__name__)
 
@@ -21,6 +22,15 @@ db = mysql.connector.connect(
     database="weed_detections"
 )
 cursor = db.cursor()
+
+#route to display most frequent bounding boxes
+@app.route('/most_frequent_bboxes')
+def most_frequent_bboxes():
+    most_common_boxes = get_most_frequent_bboxes()
+
+    img_base64 = generate_bboxes_plot(most_common_boxes)
+
+    return render_template('most_frequent_bboxes.html',plot_data=img_base64)
 
 #route to display plotting
 @app.route('/detections_over_time')
