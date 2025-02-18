@@ -5,6 +5,11 @@ import mysql.connector
 from ultralytics import YOLO
 import threading
 import time
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO 
+import os
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -26,6 +31,30 @@ def detections_over_time():
 
 def generate_detection_plot():
     cursor.execute("SELECT DATE(detected_on) AS date, COUNT(*) AS daily_detections FROM detections GROUP BY DATE(detected_on) ORDER BY date")
+    temporal_data = cursor.fetchall()
+
+    #preparing data for plotting
+    dates = [row[0] for row in temporal_data]
+    detections = [row[1] for row in temporal_data]
+
+    #creating plot using matplotlib
+    plt.figure(figsize=(10, 6))
+    plt.plot(dates, detections, marker='o', color='b', label='Daily detections')
+    plt.title("Daily detections overtime")
+    plt.xlabel("Date")
+    plt.ylabel("Number of detections")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # saving the plot as an image in base64 format
+    img= BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0) 
+    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+
+    return img_base64
+
+    
 
 # Load YOLOv8 model
 model = YOLO("best.pt")
