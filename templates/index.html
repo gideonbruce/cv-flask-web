@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Weed Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .video-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        video {
+            max-width: 100%;
+            height: auto;
+        }
+        .start-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .start-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Live Weed Detection System</h1>
+        
+        <!-- Button to start live detection -->
+        <button class="start-btn" onclick="startLiveDetection()">Start Live Detection</button>
+
+        <!-- Video Feed Section -->
+        <div class="video-container">
+            <img id="liveFeed" src="" alt="Live Video Feed">
+        </div>
+    </div>
+
+    <script>
+        // Function to start live detection and stream the video
+        function startLiveDetection() {
+            const liveFeed = document.getElementById("liveFeed");
+            liveFeed.src = "/start_live_detection";
+        }
+    </script>
+
+</body>
+</html>
