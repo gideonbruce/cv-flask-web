@@ -13,7 +13,7 @@ def get_db_connection():
         host="localhost",
         user="root",
         password="@Gideon",
-        database="weed_detection_db"
+        database="weed_detections"
     )
 
 # Function to fetch the most frequent bounding boxes from the database
@@ -41,7 +41,7 @@ def generate_bboxes_plot(most_common_boxes):
     fig, ax = plt.subplots()
 
     # Example image: Replace with the actual image you're using to draw boxes on
-    img = plt.imread('sample_image.jpg')  # You can replace it with any image or background
+    img = plt.imread('sample_image.jpeg')  # You can replace it with any image or background
     ax.imshow(img)
 
     # Draw the most frequent bounding boxes
