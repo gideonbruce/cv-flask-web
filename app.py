@@ -10,9 +10,16 @@ import base64
 from io import BytesIO 
 import os
 from PIL import Image
+from flask_bcrypt import Bcrypt
+from flask_wtf.csrf import CSRFProtect
+from forms import SignupForm, LoginForm
 from detection_utils import get_most_frequent_bboxes, generate_bboxes_plot
 
 app = Flask(__name__)
+
+app.secret_key = 'ifhutehrfjsxmfr'
+bcrypt = Bcrypt(app)
+csrf = CSRFProtect
 
 # Connecting to MySQL
 db = mysql.connector.connect(
@@ -22,6 +29,8 @@ db = mysql.connector.connect(
     database="weed_detections"
 )
 cursor = db.cursor()
+
+#signup route
 
 #route to display most frequent bounding boxes
 @app.route('/most_frequent_bboxes')
