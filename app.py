@@ -4,6 +4,7 @@ import uuid
 import mysql.connector
 from ultralytics import YOLO
 import threading
+import time
 
 app = Flask(__name__)
 
@@ -15,6 +16,16 @@ db = mysql.connector.connect(
     database="weed_detections"
 )
 cursor = db.cursor()
+
+#route to display plotting
+@app.route('/detections_over_time')
+def detections_over_time():
+    img_base64 = generate_detection_plot()
+
+    return render_template('detections_over_time.html', plot_data=img_base64)
+
+def generate_detection_plot():
+    cursor.execute("SELECT DATE(detected_on) AS date, COUNT(*) AS daily_detections FROM detections GROUP BY DATE(detected_on) ORDER BY date")
 
 # Load YOLOv8 model
 model = YOLO("best.pt")
@@ -29,7 +40,7 @@ def detect_live():
         if not ret:
             break
 
-        # Run YOLO detection on the frame
+        # Running YOLO detection on the frame
         results = model(frame)
         detections = []
 
@@ -39,7 +50,7 @@ def detect_live():
                 cls = result.names[int(box.cls[0])]
                 detections.append({"class": cls, "bbox": [x1, y1, x2, y2]})
 
-                # Draw bounding boxes on the frame
+                # Drawing bounding boxes on the frame
                 cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
                 cv2.putText(frame, cls, (int(x1), int(y1)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
@@ -51,6 +62,8 @@ def detect_live():
         # Encode the frame to send to the browser
         ret, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
+
+        time.sleep(3)
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
